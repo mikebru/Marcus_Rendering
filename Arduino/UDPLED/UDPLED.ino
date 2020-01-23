@@ -43,8 +43,17 @@ int led_b = 0;
 //IP address to send UDP data to:
 // either use the ip address of the server or 
 // a network broadcast address
-const char * udpAddress = "192.168.0.20";
+const char * udpAddress = "192.168.3.100";
 const int udpPort = 3333;
+
+IPAddress remoteIP(192,168,3,100);
+int remotePort = 7777;
+char outputBuffer[255];
+
+unsigned long currentMillis;
+unsigned long startMillis;
+const unsigned long period = 5000;
+
 
 //Are we currently connected?
 boolean connected = false;
@@ -58,6 +67,8 @@ void setup(){
   FastLED.show(); 
   // Initilize hardware serial:
   Serial.begin(115200);
+
+  startMillis = millis();
   
   //Connect to the WiFi network
   connectToWiFi(networkName, networkPswd);
@@ -85,6 +96,8 @@ const byte dim_curve[] = {
 
 void loop(){
   //only send data when connected
+
+  
   if(connected){
     //processing incoming packet, must be called before reading the buffer
     udp.parsePacket();
@@ -103,9 +116,35 @@ void loop(){
           }
         }
         FastLED.show();
-        udp.flush();
+        udp.flush();     
+
+    //only send voltage updates every five seconds
+    currentMillis = millis();
+    if(currentMillis - startMillis >= period)
+    {
+        SendVoltage();
+        startMillis = currentMillis;
+    }
+        
   }
 }
+
+
+void SendVoltage()
+{
+  float voltage = (float(analogRead(35))/4095)* 2 * 3.3 * 1.1;
+  udp.beginPacket(remoteIP, remotePort);
+
+  String message = WiFi.localIP().toString() +"/" + (String)voltage;
+  //Serial.println(message);
+  
+  message.toCharArray(outputBuffer, 255);
+  
+  //strcpy(outputBuffer, message);   
+  udp.write((byte*)outputBuffer, strlen(outputBuffer));
+  udp.endPacket();
+}
+
 
 void connectToWiFi(const char * ssid, const char * pwd){
   Serial.println("Connecting to WiFi network: " + String(ssid));
