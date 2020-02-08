@@ -124,9 +124,14 @@ void loop(){
     {
         SendVoltage();
         startMillis = currentMillis;
-    }
-        
+    }       
   }
+  //if we get disconnected, attempt to reconnect 
+  else{
+     connectToWiFi(networkName, networkPswd);
+  }
+
+  
 }
 
 
@@ -178,6 +183,3 @@ void WiFiEvent(WiFiEvent_t event){
           break;
     }
 }
-
-
-
