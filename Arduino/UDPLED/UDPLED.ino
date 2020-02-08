@@ -176,6 +176,15 @@ void WiFiEvent(WiFiEvent_t event){
       case SYSTEM_EVENT_STA_DISCONNECTED:
           Serial.println("WiFi lost connection");
           connected = false;
+
+          /*
+          currentMillis = millis();
+          if(currentMillis - startMillis >= period)
+          {
+              connectToWiFi(networkName, networkPswd);
+              startMillis = currentMillis;
+          }  */
+
           break;
     }
 }
