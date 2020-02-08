@@ -126,10 +126,6 @@ void loop(){
         startMillis = currentMillis;
     }       
   }
-  //if we get disconnected, attempt to reconnect 
-  else{
-     connectToWiFi(networkName, networkPswd);
-  }
 
   
 }
