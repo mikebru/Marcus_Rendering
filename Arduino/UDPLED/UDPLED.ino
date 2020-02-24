@@ -97,6 +97,8 @@ const byte dim_curve[] = {
 void loop(){
   //only send data when connected
 
+
+  //VoltageRead();
   
   if(connected){
     //processing incoming packet, must be called before reading the buffer
@@ -119,15 +121,37 @@ void loop(){
         udp.flush();     
 
     //only send voltage updates every five seconds
+    /*
     currentMillis = millis();
     if(currentMillis - startMillis >= period)
     {
         SendVoltage();
         startMillis = currentMillis;
-    }       
+    }  */
+         
   }
 
   
+}
+
+
+//set all LEDs to Black
+void Blackout()
+{
+   for (int j = 0; j < NUM_LEDS; j++) { // for loop through our total led's set from above.          
+      leds[j].setRGB( 0, 0, 0);
+   }        
+   FastLED.show(); 
+}
+
+
+void VoltageRead()
+{
+  float voltage = (float(analogRead(35))/4095)* 2 * 3.3 * 1.1;
+  udp.beginPacket(remoteIP, remotePort);
+
+  String message = WiFi.localIP().toString() +"/" + (String)voltage;
+  Serial.println(message);
 }
 
 
@@ -137,7 +161,7 @@ void SendVoltage()
   udp.beginPacket(remoteIP, remotePort);
 
   String message = WiFi.localIP().toString() +"/" + (String)voltage;
-  //Serial.println(message);
+  Serial.println(message);
   
   message.toCharArray(outputBuffer, 255);
   
@@ -177,6 +201,8 @@ void WiFiEvent(WiFiEvent_t event){
           Serial.println("WiFi lost connection");
           connected = false;
 
+          //turnoff LEDs if connection lost 
+          Blackout();
           /*
           currentMillis = millis();
           if(currentMillis - startMillis >= period)
@@ -184,6 +210,9 @@ void WiFiEvent(WiFiEvent_t event){
               connectToWiFi(networkName, networkPswd);
               startMillis = currentMillis;
           }  */
+  
+          connectToWiFi(networkName, networkPswd);
+
 
           break;
     }
